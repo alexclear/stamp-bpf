@@ -1,7 +1,12 @@
 # syntax=docker/dockerfile:1
 FROM golang:1.24.5-alpine AS builder
 
-RUN apk add --no-cache make
+RUN apk add --no-cache \
+    make \
+    clang \
+    llvm \
+    libc-dev \
+    linux-headers
 
 WORKDIR /app
 
