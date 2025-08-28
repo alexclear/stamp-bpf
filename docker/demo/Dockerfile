@@ -6,7 +6,10 @@ RUN apk add --no-cache \
     clang \
     llvm \
     libc-dev \
-    linux-headers
+    linux-headers \
+    linux-tools \
+    elfutils-dev \
+    libbpf-dev
 
 WORKDIR /app
 
