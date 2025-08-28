@@ -22,7 +22,7 @@ jobs:
         with:
           image: stamp-bpf/stamp-bpf
           registry: harbor-pve1.spbnix.local
-          extra_args: "--skip-tls-verify"
+          extra_args: "--skip-tls-verify --cache --cache-copy-layers --cache-run-layers --cache-ttl 336h"
           tag: ${{ env.SHORT_SHA }}
           tag_with_latest: true
           path: ./
