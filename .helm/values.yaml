@@ -18,6 +18,13 @@ global:
   
   # Affinity rules for pod placement
   affinity: {}
+  
+  # Global security configuration
+  security:
+    # Pod security context
+    podSecurityContext: {}
+    # Container security context
+    containerSecurityContext: {}
 
 # Sender configuration
 # The sender component sends STAMP packets to reflector targets
@@ -127,6 +134,7 @@ monitoring:
 
 # Security configuration
 # Security settings for pods and containers
+# These values override global.security settings when defined
 security:
   # Pod security context
   podSecurityContext: {}

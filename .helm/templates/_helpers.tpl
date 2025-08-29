@@ -123,10 +123,10 @@ Generate reflector image name
 Generate pod security context
 */}}
 {{- define "stamp-bpf.podSecurityContext" -}}
-{{- if .Values.security.podSecurityContext -}}
-{{- toYaml .Values.security.podSecurityContext -}}
-{{- else -}}
+{{- if .Values.global.security.podSecurityContext -}}
 {{- toYaml .Values.global.security.podSecurityContext -}}
+{{- else -}}
+{{- toYaml .Values.security.podSecurityContext -}}
 {{- end -}}
 {{- end }}
 
@@ -134,10 +134,10 @@ Generate pod security context
 Generate container security context
 */}}
 {{- define "stamp-bpf.containerSecurityContext" -}}
-{{- if .Values.security.containerSecurityContext -}}
-{{- toYaml .Values.security.containerSecurityContext -}}
-{{- else -}}
+{{- if .Values.global.security.containerSecurityContext -}}
 {{- toYaml .Values.global.security.containerSecurityContext -}}
+{{- else -}}
+{{- toYaml .Values.security.containerSecurityContext -}}
 {{- end -}}
 {{- end }}
 
