@@ -40,7 +40,15 @@ spec:
       containers:
         - name: reflector
           image: {{ include "stamp-bpf.reflector.image" . }}
-          imagePullPolicy: {{ .Values.reflector.image.pullPolicy | default .Values.global.image.pullPolicy }}
+          {{- $pullPolicy := "" }}
+          {{- if and $.Values.reflector.image (hasKey $.Values.reflector.image "pullPolicy") }}
+            {{- $pullPolicy = $.Values.reflector.image.pullPolicy }}
+          {{- else if and $.Values.global.image (hasKey $.Values.global.image "pullPolicy") }}
+            {{- $pullPolicy = $.Values.global.image.pullPolicy }}
+          {{- else }}
+            {{- $pullPolicy = "IfNotPresent" }}
+          {{- end }}
+          imagePullPolicy: {{ $pullPolicy }}
           securityContext:
             {{- include "stamp-bpf.containerSecurityContext" . | nindent 12 }}
           args:

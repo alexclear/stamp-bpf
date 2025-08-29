@@ -248,7 +248,7 @@ Generate reflector container arguments
 {{- define "stamp-bpf.reflector.args" -}}
 {{- $args := list -}}
 {{- $args = append $args .Values.reflector.interface -}}
-{{- if ne .Values.reflector.port 862 -}}
+{{- if ne (int .Values.reflector.port) 862 -}}
 {{- $args = append $args (printf "-p=%d" .Values.reflector.port) -}}
 {{- end -}}
 {{- if .Values.reflector.debug -}}
@@ -259,13 +259,13 @@ Generate reflector container arguments
 {{- end -}}
 {{- if .Values.reflector.histogram.enabled -}}
 {{- $args = append $args "--hist" -}}
-{{- if ne .Values.reflector.histogram.bins 28 -}}
+{{- if ne (int .Values.reflector.histogram.bins) 28 -}}
 {{- $args = append $args (printf "--bins=%d" .Values.reflector.histogram.bins) -}}
 {{- end -}}
-{{- if ne .Values.reflector.histogram.floor 25 -}}
+{{- if ne (int .Values.reflector.histogram.floor) 25 -}}
 {{- $args = append $args (printf "--floor=%d" .Values.reflector.histogram.floor) -}}
 {{- end -}}
-{{- if ne .Values.reflector.histogram.ceiling 75 -}}
+{{- if ne (int .Values.reflector.histogram.ceiling) 75 -}}
 {{- $args = append $args (printf "--ceiling=%d" .Values.reflector.histogram.ceiling) -}}
 {{- end -}}
 {{- if ne .Values.reflector.histogram.path "/tmp/reflector-hist" -}}
