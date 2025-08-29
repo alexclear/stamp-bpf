@@ -100,8 +100,8 @@ Create the name for the namespace
 Generate image name
 */}}
 {{- define "stamp-bpf.image" -}}
-{{- $repository := .repository | default .Values.global.image.repository -}}
-{{- $tag := .tag | default .Values.global.image.tag -}}
+{{- $repository := .repository | default $.Values.global.image.repository -}}
+{{- $tag := .tag | default $.Values.global.image.tag -}}
 {{- printf "%s:%s" $repository $tag -}}
 {{- end }}
 
@@ -123,8 +123,8 @@ Generate reflector image name
 Generate pod security context
 */}}
 {{- define "stamp-bpf.podSecurityContext" -}}
-{{- if .Values.global.security.podSecurityContext -}}
-{{- toYaml .Values.global.security.podSecurityContext -}}
+{{- if $.Values.global.security.podSecurityContext -}}
+{{- toYaml $.Values.global.security.podSecurityContext -}}
 {{- else -}}
 {{- toYaml .Values.security.podSecurityContext -}}
 {{- end -}}
@@ -134,8 +134,8 @@ Generate pod security context
 Generate container security context
 */}}
 {{- define "stamp-bpf.containerSecurityContext" -}}
-{{- if .Values.global.security.containerSecurityContext -}}
-{{- toYaml .Values.global.security.containerSecurityContext -}}
+{{- if $.Values.global.security.containerSecurityContext -}}
+{{- toYaml $.Values.global.security.containerSecurityContext -}}
 {{- else -}}
 {{- toYaml .Values.security.containerSecurityContext -}}
 {{- end -}}
@@ -148,7 +148,7 @@ Generate node selector
 {{- if .nodeSelector -}}
 {{- toYaml .nodeSelector -}}
 {{- else -}}
-{{- toYaml .Values.global.nodeSelector -}}
+{{- toYaml $.Values.global.nodeSelector -}}
 {{- end -}}
 {{- end }}
 
@@ -159,7 +159,7 @@ Generate tolerations
 {{- if .tolerations -}}
 {{- toYaml .tolerations -}}
 {{- else -}}
-{{- toYaml .Values.global.tolerations -}}
+{{- toYaml $.Values.global.tolerations -}}
 {{- end -}}
 {{- end }}
 
@@ -170,7 +170,7 @@ Generate affinity
 {{- if .affinity -}}
 {{- toYaml .affinity -}}
 {{- else -}}
-{{- toYaml .Values.global.affinity -}}
+{{- toYaml $.Values.global.affinity -}}
 {{- end -}}
 {{- end }}
 
