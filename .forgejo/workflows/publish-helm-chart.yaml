@@ -1,0 +1,86 @@
+name: Publish Helm Chart
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Commit SHA to run the workflow on'
+        required: true
+        type: string
+
+jobs:
+  helm-chart-push:
+    runs-on: docker
+    env:
+      HARBOR_USERNAME: "robot$stamp-bpf+robot"
+      HARBOR_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOCKER_HUB_REPO: "stamp-bpf/stamp-bpf-chart"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.13.0
+
+      - name: Log in to Docker Hub (Helm OCI)
+        run: |
+          # Exit immediately if a command exits with a non-zero status.
+          set -e
+
+          echo "--- Setting up CA certificate ---"
+          # Create temporary directory and add local CA certificate to truststore
+          TEMP_CERT_DIR=$(mktemp -d)
+          CERT_FILE=$TEMP_CERT_DIR/local-root-ca.crt
+          # The 'EOC' (End of Certificate) heredoc is now correctly formatted.
+          cat > $CERT_FILE <<'EOC'
+          -----BEGIN CERTIFICATE-----
+          MIIE/DCCAuSgAwIBAgIQLhh9KTQqDRMVUlE5vsDszTANBgkqhkiG9w0BAQsFADAY
+          MRYwFAYDVQQDEw1sb2NhbC1yb290LWNhMB4XDTI1MDYyMTE3NTIwNFoXDTM1MDYx
+          OTE3NTIwNFowGDEWMBQGA1UEAxMNbG9jYWwtcm9vdC1jYTCCAiIwDQYJKoZIhvcN
+          AQEBBQADggIPADCCAgoCggIBAOFAC7x+CNAVRc/nuXbgNUo+11a8IJjud4hGSxyi
+          OnaytNAig5YZrmQO0nUDjPFJkrYDGWkOCa6M3Tne7PHk9DQpWw8gqt2ugLMy5jFO
+          ZZJRx0fSVE9KDUXHq67IJ7ntQC1gIxjnftIIYPf6TJXSE2pO6dT/Cz5XZn08UUze
+          USFqSxGSvqapgqBXAewj4+QF0soCwzDZGVaB+TSh1POy6naTYdJZFyXd1nlpy/Yg
+          HbX1ysLtBzYjUYZYgtDa7koXfoQ3krdykwMqqZwxN1Wq75CouTcnGqeJsu+FiHLi
+          6714LIejqa0gIq+yPLfYwKj+YXFpVSUcIk4p1Et4NjVCYfar+YTr8PqsLJofU0sE
+          /T4xeSr73hZgL3rfs20gJYRND1Q8BBlPjvfeLsbqz9pgwsp2JSyKwFeM9MJ0owH5
+          L/TZ+IjxVFL3Z1+V0+7dsijApXwftSkMjjSUnhLDZ17kttvn0x8a56c/p+Srjni0
+          iLVmJxC/CGzXRzfzXy9k9a/nUDjJ0ns0QhIzSD6/cX/LnmgZlqzmeG1XRjqbcZkD
+          8GSnj3xGAftCbLsdgj7ISJL5Rn1WLCYF4aio6JUgi9VGABMkV+fOLlIBJVHGF5vl
+          zJqT8xBRtcUeiJdKOJTGOwHveA5EwdjhlGuTqGH3hcgvbJMg6LmeVQfb1sAo6U75
+          MG5ZAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwICpDAPBgNVHRMBAf8EBTADAQH/MB0G
+          A1UdDgQWBBR4Wt0IO9f9vE+8m8DrdIyEGHmLRjANBgkqhkiG9w0BAQsFAAOCAgEA
+          Hv9i6EQaGqNfJCYsq9dIMiSIzBG2wPVVdI1BNIN3HSpyD/cJ2gPvaF+mBTHvNVZ2
+          cjIZancHR9YAvjOKeqpB9plH4quVokgpFZRi+V/wUeeky6yFvECjjJTavTqINvxB
+          CbkZtAHn5Qz+UzrM8X0XFqpwk2QZDUTSpqnW362Twh7mQQFqWeveaoVOdCHZyzO1
+          JAPOFU2saHMKIRwxtfy8qSwmZ8VRnwVI/ZPvLWT9sK/tqU0lok2auQNbndTZ/m3H
+          PHK310gRoBpQdrbd5nU4MBhw4bSj/KsUWwfJaBG0MOgyZw9524odIWWPOjt2VY6T
+          l+uOFGKpyOpYdITQSCNABXrOEZdVFAC9GnXDxPwNXfs+BvcZDhZ2lraHlAMi6POW
+          r7RoRpXkq/QULGRZLfoWQ5u56rtHu7eviCHexfUE062/ISsZCiVLDFHxoEfu7q0o
+          v6wbBTf0gBVrqeCfBlhpz3oUp0Q+HTnh3GKuo09807JaN9ltgjlWSll316ZmPUPb
+          EN9JNbrQghS7EVLjP2OO91AE1sKowJ6oR4tfjUSc/6CrP5MIeqHfFndMPkfjsqao
+          qXjB+d7cBT2KafcmWLaBdh93nLvWmZKVW6AxuFJHfhLyju8uKahFA90iuI9ZynWQ
+          Eo2ne9BzkqUk42dP8Makkww/Rn5+UUDf/BgoxUWe/rY=
+          -----END CERTIFICATE-----
+          EOC
+          cp $CERT_FILE /usr/local/share/ca-certificates/
+          update-ca-certificates --fresh
+          rm -rf $TEMP_CERT_DIR
+          echo $HARBOR_PASSWORD | helm registry login harbor-pve1.spbnix.local \
+            --username $HARBOR_USERNAME --password-stdin
+
+      - name: Package Helm chart
+        run: |
+          helm package .helm
+
+      - name: Push Helm chart to Docker Hub
+        run: |
+          CHART_PACKAGE=$(ls *.tgz | head -n 1)
+          helm push $CHART_PACKAGE oci://harbor-pve1.spbnix.local/${DOCKER_HUB_REPO}
