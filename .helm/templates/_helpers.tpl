@@ -100,8 +100,8 @@ Create the name for the namespace
 Generate image name
 */}}
 {{- define "stamp-bpf.image" -}}
-{{- $repository := .repository | default $.Values.global.image.repository -}}
-{{- $tag := .tag | default $.Values.global.image.tag -}}
+{{- $repository := .repository -}}
+{{- $tag := .tag -}}
 {{- printf "%s:%s" $repository $tag -}}
 {{- end }}
 
