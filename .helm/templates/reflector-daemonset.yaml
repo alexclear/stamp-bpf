@@ -51,6 +51,7 @@ spec:
           imagePullPolicy: {{ $pullPolicy }}
           securityContext:
             {{- include "stamp-bpf.containerSecurityContext" . | nindent 12 }}
+          command: [{{ .Values.reflector.command | default "/usr/local/bin/reflector" | quote }}]
           args:
             {{- include "stamp-bpf.reflector.args" . | nindent 12 }}
           env:

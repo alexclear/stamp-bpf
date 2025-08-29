@@ -56,6 +56,9 @@ sender:
   # Debug mode flag
   debug: false
   
+  # Command to run for the sender component
+  command: "/usr/local/bin/sender"
+  
   # Histogram configuration for sender
   histogram:
     # Enable histogram collection
@@ -119,6 +122,9 @@ reflector:
   
   # Additional container arguments
   extraArgs: []
+  
+  # Command to run for the reflector component
+  command: "/usr/local/bin/reflector"
 
 # Monitoring configuration
 # Configuration for PodMonitor resources to collect metrics
