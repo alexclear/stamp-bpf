@@ -197,19 +197,19 @@ Generate sender container arguments
 {{- if .reflectorIP -}}
 {{- $args = append $args .reflectorIP -}}
 {{- end -}}
-{{- if ne .Values.sender.sourcePort 862 -}}
+{{- if ne (int .Values.sender.sourcePort) 862 -}}
 {{- $args = append $args (printf "-s=%d" .Values.sender.sourcePort) -}}
 {{- end -}}
-{{- if ne .Values.sender.destinationPort 862 -}}
+{{- if ne (int .Values.sender.destinationPort) 862 -}}
 {{- $args = append $args (printf "-d=%d" .Values.sender.destinationPort) -}}
 {{- end -}}
-{{- if ne .Values.sender.count 0 -}}
+{{- if ne (int .Values.sender.count) 0 -}}
 {{- $args = append $args (printf "-c=%d" .Values.sender.count) -}}
 {{- end -}}
-{{- if ne .Values.sender.interval 1.0 -}}
+{{- if ne (float64 .Values.sender.interval) 1.0 -}}
 {{- $args = append $args (printf "-i=%f" .Values.sender.interval) -}}
 {{- end -}}
-{{- if ne .Values.sender.timeout 1 -}}
+{{- if ne (int .Values.sender.timeout) 1 -}}
 {{- $args = append $args (printf "-w=%d" .Values.sender.timeout) -}}
 {{- end -}}
 {{- if .Values.sender.debug -}}
@@ -217,13 +217,13 @@ Generate sender container arguments
 {{- end -}}
 {{- if .Values.sender.histogram.enabled -}}
 {{- $args = append $args "--hist" -}}
-{{- if ne .Values.sender.histogram.bins 28 -}}
+{{- if ne (int .Values.sender.histogram.bins) 28 -}}
 {{- $args = append $args (printf "--bins=%d" .Values.sender.histogram.bins) -}}
 {{- end -}}
-{{- if ne .Values.sender.histogram.floor 25 -}}
+{{- if ne (int .Values.sender.histogram.floor) 25 -}}
 {{- $args = append $args (printf "--floor=%d" .Values.sender.histogram.floor) -}}
 {{- end -}}
-{{- if ne .Values.sender.histogram.ceiling 75 -}}
+{{- if ne (int .Values.sender.histogram.ceiling) 75 -}}
 {{- $args = append $args (printf "--ceiling=%d" .Values.sender.histogram.ceiling) -}}
 {{- end -}}
 {{- if ne .Values.sender.histogram.path "/tmp/sender-hist" -}}

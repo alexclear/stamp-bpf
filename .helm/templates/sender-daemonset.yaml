@@ -67,7 +67,15 @@ spec:
       {{- if eq (len .Values.sender.reflectorIPs) 0 }}
         - name: sender
           image: {{ include "stamp-bpf.sender.image" . }}
-          imagePullPolicy: {{ .Values.sender.image.pullPolicy | default .Values.global.image.pullPolicy }}
+          {{- $pullPolicy := "" }}
+          {{- if and $.Values.sender.image (hasKey $.Values.sender.image "pullPolicy") }}
+            {{- $pullPolicy = $.Values.sender.image.pullPolicy }}
+          {{- else if and $.Values.global.image (hasKey $.Values.global.image "pullPolicy") }}
+            {{- $pullPolicy = $.Values.global.image.pullPolicy }}
+          {{- else }}
+            {{- $pullPolicy = "IfNotPresent" }}{{/* Or another sensible default */}}
+          {{- end }}
+          imagePullPolicy: {{ $pullPolicy }}         
           securityContext:
             {{- include "stamp-bpf.containerSecurityContext" . | nindent 12 }}
           args:
