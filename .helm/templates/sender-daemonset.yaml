@@ -52,7 +52,7 @@ spec:
           imagePullPolicy: {{ $pullPolicy }}
           securityContext:
             {{- include "stamp-bpf.containerSecurityContext" $ | nindent 12 }}
-          command: [{{ .Values.sender.command | default "/usr/local/bin/sender" | quote }}]
+          command: [{{ $.Values.sender.command | default "/usr/local/bin/sender" | quote }}]
           args:
             {{- include "stamp-bpf.sender.args" (dict "Values" $.Values "reflectorIP" $reflectorIP) | nindent 12 }}
           env:

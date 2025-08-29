@@ -1,6 +1,6 @@
 apiVersion: v2
 name: stamp-bpf
-version: 0.1.10
+version: 0.1.11
 description: A Helm chart for deploying STAMP protocol implementation using eBPF
 type: application
 appVersion: v0.1.0
