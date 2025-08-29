@@ -109,15 +109,29 @@ Generate image name
 Generate sender image name
 */}}
 {{- define "stamp-bpf.sender.image" -}}
-{{- include "stamp-bpf.image" .Values.sender.image | default (include "stamp-bpf.image" $.Values.global.image) -}}
-{{- end }}
+{{- $image := dict -}}
+{{- if .Values.sender.image -}}
+  {{- $image = .Values.sender.image -}}
+{{- else -}}
+  {{- $image = .Values.global.image -}}
+{{- end -}}
+{{- include "stamp-bpf.image" $image -}}
+{{- end -}}
+
 
 {{/*
 Generate reflector image name
 */}}
 {{- define "stamp-bpf.reflector.image" -}}
-{{- include "stamp-bpf.image" .Values.reflector.image | default (include "stamp-bpf.image" $.Values.global.image) -}}
-{{- end }}
+{{- $image := dict -}}
+{{- if .Values.reflector.image -}}
+  {{- $image = .Values.reflector.image -}}
+{{- else -}}
+  {{- $image = .Values.global.image -}}
+{{- end -}}
+{{- include "stamp-bpf.image" $image -}}
+{{- end -}}
+
 
 {{/*
 Generate pod security context
