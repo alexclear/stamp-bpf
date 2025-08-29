@@ -109,14 +109,14 @@ Generate image name
 Generate sender image name
 */}}
 {{- define "stamp-bpf.sender.image" -}}
-{{- include "stamp-bpf.image" .Values.sender.image | default (include "stamp-bpf.image" .Values.global.image) -}}
+{{- include "stamp-bpf.image" .Values.sender.image | default (include "stamp-bpf.image" $.Values.global.image) -}}
 {{- end }}
 
 {{/*
 Generate reflector image name
 */}}
 {{- define "stamp-bpf.reflector.image" -}}
-{{- include "stamp-bpf.image" .Values.reflector.image | default (include "stamp-bpf.image" .Values.global.image) -}}
+{{- include "stamp-bpf.image" .Values.reflector.image | default (include "stamp-bpf.image" $.Values.global.image) -}}
 {{- end }}
 
 {{/*
