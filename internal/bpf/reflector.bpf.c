@@ -27,7 +27,7 @@ struct {
   __type(value, struct sample);
 } output SEC(".maps");
 
-SEC("tc/ingress")
+SEC("tcx/ingress")
 int reflector_in(struct __sk_buff *skb){
   //lots of work here - convert senderpkt into reflectorpkt
   //Save the receive timestamp ASAP
@@ -91,7 +91,7 @@ int reflector_in(struct __sk_buff *skb){
   return pkt_turnaround(skb);
 } 
 
-SEC("tc/egress")
+SEC("tcx/egress")
 int reflector_out(struct __sk_buff *skb){
   //light work - stamp a packet and send it on its way
 

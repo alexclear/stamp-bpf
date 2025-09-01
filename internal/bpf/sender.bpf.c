@@ -48,7 +48,7 @@ int sender_out(struct __sk_buff *skb){
   return TCX_PASS;
 } 
 
-SEC("tc/ingress")
+SEC("tcx/ingress")
 int sender_in(struct __sk_buff *skb){
   //RETURN VALUE: FOR-ME ? TCX_DROP : TCX_PASS
   
