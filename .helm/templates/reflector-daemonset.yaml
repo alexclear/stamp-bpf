@@ -63,4 +63,22 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    bpftool net attach pinned /sys/fs/bpf/stamp-bpf/reflector_in dev eth0 attach_type ingress && \
+                    bpftool net attach pinned /sys/fs/bpf/stamp-bpf/reflector_out dev eth0 attach_type egress
+          volumeMounts:
+            - name: bpf-fs
+              mountPath: /sys/fs/bpf
+              mountPropagation: HostToContainer
+      volumes:
+        - name: bpf-fs
+          hostPath:
+            path: /sys/fs/bpf
+            type: Directory
 {{- end }}

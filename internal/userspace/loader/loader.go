@@ -5,38 +5,35 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/cilium/ebpf"
-	"github.com/cilium/ebpf/link"
 	"github.com/viktordoronin/stamp-bpf/internal/bpf/reflector"
 	"github.com/viktordoronin/stamp-bpf/internal/bpf/sender"
 	"github.com/viktordoronin/stamp-bpf/internal/userspace/stamp"
 )
+
+const pinPath = "/sys/fs/bpf/stamp-bpf"
 
 type fd interface {
 	Close() error
 }
 
 type senderFD struct {
-	Objs        sender.SenderObjects
-	L_in, L_out link.Link
+	Objs sender.SenderObjects
 }
 
 func (s senderFD) Close() {
 	s.Objs.Close()
-	s.L_in.Close()
-	s.L_out.Close()
 }
 
 type reflectorFD struct {
-	Objs        reflector.ReflectorObjects
-	L_in, L_out link.Link
+	Objs reflector.ReflectorObjects
 }
 
 func (s reflectorFD) Close() {
 	s.Objs.Close()
-	s.L_in.Close()
-	s.L_out.Close()
 }
 
 func LoadSender(args stamp.Args) senderFD {
@@ -58,25 +55,20 @@ func LoadSender(args stamp.Args) senderFD {
 		}
 	}
 
-	// Attach TCX programs
-	tcxopts := link.TCXOptions{
-		Interface: args.Dev.Index,
-		Program:   objs.SenderOut,
-		Attach:    ebpf.AttachTCXEgress,
+	// Create pin directory
+	if err := os.MkdirAll(pinPath, 0755); err != nil {
+		log.Fatalf("Error creating pin directory: %v", err)
 	}
-	l_out, err := link.AttachTCX(tcxopts)
-	if err != nil {
-		log.Fatalf("Error attaching the egress program: %v", err)
+
+	// Pin TCX programs
+	if err := objs.SenderOut.Pin(filepath.Join(pinPath, "sender_out")); err != nil {
+		log.Fatalf("Error pinning the egress program: %v", err)
 	}
-	tcxopts = link.TCXOptions{
-		Interface: args.Dev.Index,
-		Program:   objs.SenderIn,
-		Attach:    ebpf.AttachTCXIngress,
+	if err := objs.SenderIn.Pin(filepath.Join(pinPath, "sender_in")); err != nil {
+		log.Fatalf("Error pinning the ingress program: %v", err)
 	}
-	l_in, err := link.AttachTCX(tcxopts)
-	if err != nil {
-		log.Fatalf("Error attaching the ingress program: %v", err)
-	}
+
+	// Programs are pinned, no links to return
 
 	// populate globals
 	ip := binary.LittleEndian.Uint32(args.Localaddr.To4())
@@ -101,7 +93,7 @@ func LoadSender(args stamp.Args) senderFD {
 		}
 	}
 	fmt.Println()
-	return senderFD{Objs: objs, L_in: l_in, L_out: l_out}
+	return senderFD{Objs: objs}
 }
 
 func LoadReflector(args stamp.Args) reflectorFD {
@@ -121,23 +113,18 @@ func LoadReflector(args stamp.Args) reflectorFD {
 			log.Print(objs.ReflectorOut.VerifierLog)
 		}
 	}
-	tcxopts := link.TCXOptions{
-		Interface: args.Dev.Index,
-		Program:   objs.ReflectorOut,
-		Attach:    ebpf.AttachTCXEgress,
+
+	// Create pin directory
+	if err := os.MkdirAll(pinPath, 0755); err != nil {
+		log.Fatalf("Error creating pin directory: %v", err)
 	}
-	l_out, err := link.AttachTCX(tcxopts)
-	if err != nil {
-		log.Fatalf("Error attaching the egress program: %v", err)
+
+	// Pin TCX programs
+	if err := objs.ReflectorOut.Pin(filepath.Join(pinPath, "reflector_out")); err != nil {
+		log.Fatalf("Error pinning the egress program: %v", err)
 	}
-	tcxopts = link.TCXOptions{
-		Interface: args.Dev.Index,
-		Program:   objs.ReflectorIn,
-		Attach:    ebpf.AttachTCXIngress,
-	}
-	l_in, err := link.AttachTCX(tcxopts)
-	if err != nil {
-		log.Fatalf("Error attaching the ingress program: %v", err)
+	if err := objs.ReflectorIn.Pin(filepath.Join(pinPath, "reflector_in")); err != nil {
+		log.Fatalf("Error pinning the ingress program: %v", err)
 	}
 
 	// populate globals
@@ -162,5 +149,5 @@ func LoadReflector(args stamp.Args) reflectorFD {
 		}
 	}
 	fmt.Println()
-	return reflectorFD{Objs: objs, L_in: l_in, L_out: l_out}
+	return reflectorFD{Objs: objs}
 }
