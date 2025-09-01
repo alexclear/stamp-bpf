@@ -5,34 +5,43 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
 
 	"github.com/cilium/ebpf"
+	"github.com/cilium/ebpf/link"
 	"github.com/viktordoronin/stamp-bpf/internal/bpf/reflector"
 	"github.com/viktordoronin/stamp-bpf/internal/bpf/sender"
 	"github.com/viktordoronin/stamp-bpf/internal/userspace/stamp"
 )
-
-const pinPath = "/sys/fs/bpf/stamp-bpf"
 
 type fd interface {
 	Close() error
 }
 
 type senderFD struct {
-	Objs sender.SenderObjects
+	Objs  sender.SenderObjects
+	Links []link.Link
 }
 
 func (s senderFD) Close() {
+	for _, l := range s.Links {
+		if l != nil {
+			l.Close()
+		}
+	}
 	s.Objs.Close()
 }
 
 type reflectorFD struct {
-	Objs reflector.ReflectorObjects
+	Objs  reflector.ReflectorObjects
+	Links []link.Link
 }
 
 func (s reflectorFD) Close() {
+	for _, l := range s.Links {
+		if l != nil {
+			l.Close()
+		}
+	}
 	s.Objs.Close()
 }
 
@@ -55,21 +64,6 @@ func LoadSender(args stamp.Args) senderFD {
 		}
 	}
 
-	// Create pin directory
-	if err := os.MkdirAll(pinPath, 0755); err != nil {
-		log.Fatalf("Error creating pin directory: %v", err)
-	}
-
-	// Pin TCX programs
-	if err := objs.SenderOut.Pin(filepath.Join(pinPath, "sender_out")); err != nil {
-		log.Fatalf("Error pinning the egress program: %v", err)
-	}
-	if err := objs.SenderIn.Pin(filepath.Join(pinPath, "sender_in")); err != nil {
-		log.Fatalf("Error pinning the ingress program: %v", err)
-	}
-
-	// Programs are pinned, no links to return
-
 	// populate globals
 	ip := binary.LittleEndian.Uint32(args.Localaddr.To4())
 	objs.Laddr.Set(ip)
@@ -92,8 +86,34 @@ func LoadSender(args stamp.Args) senderFD {
 			log.Fatalf("No PTP syncing detected with --enforce-ptp flag set, aborting")
 		}
 	}
+
+	// Attach TCX programs
+	var links []link.Link
+
+	// Attach egress program
+	egressLink, err := link.AttachTCX(link.TCXOptions{
+		Program:   objs.SenderOut,
+		Attach:    ebpf.AttachTCXEgress,
+		Interface: args.Dev.Index,
+	})
+	if err != nil {
+		log.Fatalf("Error attaching egress program: %v", err)
+	}
+	links = append(links, egressLink)
+
+	// Attach ingress program
+	ingressLink, err := link.AttachTCX(link.TCXOptions{
+		Program:   objs.SenderIn,
+		Attach:    ebpf.AttachTCXIngress,
+		Interface: args.Dev.Index,
+	})
+	if err != nil {
+		log.Fatalf("Error attaching ingress program: %v", err)
+	}
+	links = append(links, ingressLink)
+
 	fmt.Println()
-	return senderFD{Objs: objs}
+	return senderFD{Objs: objs, Links: links}
 }
 
 func LoadReflector(args stamp.Args) reflectorFD {
@@ -114,19 +134,6 @@ func LoadReflector(args stamp.Args) reflectorFD {
 		}
 	}
 
-	// Create pin directory
-	if err := os.MkdirAll(pinPath, 0755); err != nil {
-		log.Fatalf("Error creating pin directory: %v", err)
-	}
-
-	// Pin TCX programs
-	if err := objs.ReflectorOut.Pin(filepath.Join(pinPath, "reflector_out")); err != nil {
-		log.Fatalf("Error pinning the egress program: %v", err)
-	}
-	if err := objs.ReflectorIn.Pin(filepath.Join(pinPath, "reflector_in")); err != nil {
-		log.Fatalf("Error pinning the ingress program: %v", err)
-	}
-
 	// populate globals
 	ip := binary.LittleEndian.Uint32(args.Localaddr.To4())
 	objs.Laddr.Set(ip)
@@ -148,6 +155,32 @@ func LoadReflector(args stamp.Args) reflectorFD {
 			log.Fatalf("No PTP syncing detected with --enforce-ptp flag set, aborting")
 		}
 	}
+
+	// Attach TCX programs
+	var links []link.Link
+
+	// Attach egress program
+	egressLink, err := link.AttachTCX(link.TCXOptions{
+		Program:   objs.ReflectorOut,
+		Attach:    ebpf.AttachTCXEgress,
+		Interface: args.Dev.Index,
+	})
+	if err != nil {
+		log.Fatalf("Error attaching egress program: %v", err)
+	}
+	links = append(links, egressLink)
+
+	// Attach ingress program
+	ingressLink, err := link.AttachTCX(link.TCXOptions{
+		Program:   objs.ReflectorIn,
+		Attach:    ebpf.AttachTCXIngress,
+		Interface: args.Dev.Index,
+	})
+	if err != nil {
+		log.Fatalf("Error attaching ingress program: %v", err)
+	}
+	links = append(links, ingressLink)
+
 	fmt.Println()
-	return reflectorFD{Objs: objs}
+	return reflectorFD{Objs: objs, Links: links}
 }
