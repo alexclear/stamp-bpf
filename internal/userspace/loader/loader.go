@@ -82,6 +82,13 @@ func LoadSender(args stamp.Args) senderFD {
 		objs.Tai.Set(uint16(0))
 	}
 
+	// Set disable TAI flag
+	if args.DisableTAI {
+		objs.Disable_tai.Set(uint16(1))
+	} else {
+		objs.Disable_tai.Set(uint16(0))
+	}
+
 	// Check if we have clock syncing
 	if checkSync() == false {
 		if args.Sync == true || args.PTP == true {
@@ -138,6 +145,14 @@ func LoadReflector(args stamp.Args) reflectorFD {
 	} else {
 		objs.Tai.Set(uint16(0))
 	}
+
+	// Set disable TAI flag
+	if args.DisableTAI {
+		objs.Disable_tai.Set(uint16(1))
+	} else {
+		objs.Disable_tai.Set(uint16(0))
+	}
+
 	// Check if we have clock syncing
 	if checkSync() == false {
 		if args.Sync == true || args.PTP == true {

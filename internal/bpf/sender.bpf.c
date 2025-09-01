@@ -53,7 +53,12 @@ int sender_in(struct __sk_buff *skb){
   //RETURN VALUE: FOR-ME ? TCX_DROP : TCX_PASS
   
   //timestamp as soon as we get the packet
-  uint64_t last_ts = bpf_ktime_get_tai_ns();
+  uint64_t last_ts;
+  if (disable_tai) {
+    last_ts = bpf_ktime_get_ns();
+  } else {
+    last_ts = bpf_ktime_get_tai_ns();
+  }
 
   //for-me check
   if (!for_me(skb, FORME_INBOUND)) return TCX_PASS;

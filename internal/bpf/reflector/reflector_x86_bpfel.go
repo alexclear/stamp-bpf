@@ -76,9 +76,10 @@ type ReflectorMapSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type ReflectorVariableSpecs struct {
-	Laddr  *ebpf.VariableSpec `ebpf:"laddr"`
-	S_port *ebpf.VariableSpec `ebpf:"s_port"`
-	Tai    *ebpf.VariableSpec `ebpf:"tai"`
+	Laddr       *ebpf.VariableSpec `ebpf:"laddr"`
+	S_port      *ebpf.VariableSpec `ebpf:"s_port"`
+	Tai         *ebpf.VariableSpec `ebpf:"tai"`
+	Disable_tai *ebpf.VariableSpec `ebpf:"disable_tai"`
 }
 
 // ReflectorObjects contains all objects after they have been loaded into the kernel.
@@ -114,9 +115,10 @@ func (m *ReflectorMaps) Close() error {
 //
 // It can be passed to LoadReflectorObjects or ebpf.CollectionSpec.LoadAndAssign.
 type ReflectorVariables struct {
-	Laddr  *ebpf.Variable `ebpf:"laddr"`
-	S_port *ebpf.Variable `ebpf:"s_port"`
-	Tai    *ebpf.Variable `ebpf:"tai"`
+	Laddr       *ebpf.Variable `ebpf:"laddr"`
+	S_port      *ebpf.Variable `ebpf:"s_port"`
+	Tai         *ebpf.Variable `ebpf:"tai"`
+	Disable_tai *ebpf.Variable `ebpf:"disable_tai"`
 }
 
 // ReflectorPrograms contains all programs after they have been loaded into the kernel.

@@ -26,6 +26,7 @@ type Args struct {
 	HistPath            string
 	Output              bool
 	Sync, PTP           bool
+	DisableTAI          bool
 }
 
 func StartSession(args Args) {

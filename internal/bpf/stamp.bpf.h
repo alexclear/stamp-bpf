@@ -14,8 +14,9 @@
 
 // global vars for for-me check
 volatile uint32_t laddr; // local IP
-volatile uint16_t s_port; // source port 
+volatile uint16_t s_port; // source port
 volatile uint16_t tai; // flag for TAI correction
+volatile uint16_t disable_tai; // flag to disable TAI timestamping
 
 enum forme_dir {
   FORME_OUTBOUND,
@@ -36,16 +37,21 @@ struct ntp_ts{
 
 // NTP CONVERSION
 uint32_t timestamp(struct ntp_ts *arg) {
-  uint64_t utns = bpf_ktime_get_tai_ns(); //Unix nanoseconds
+  uint64_t utns;
+  if (disable_tai) {
+    utns = bpf_ktime_get_ns(); //Unix nanoseconds
+  } else {
+    utns = bpf_ktime_get_tai_ns(); //Unix nanoseconds
+  }
   uint64_t ntps = utns / 1000000000 ; //this needs to be 64 bit to avoid over/underflows
   if (tai==TAI_LEAP) { //we add leap seconds to TAI if userspace detects that it hasn't been done
     ntps=ntps+37;
   }
   uint64_t ntpf = utns % 1000000000 ;
   ntps += 2208988800 ;
-  ntpf = ( ntpf << 32 ) ; 
+  ntpf = ( ntpf << 32 ) ;
   ntpf /= 1000000000 ;
-  arg->ntp_secs=bpf_htonl((uint32_t) ntps); 
+  arg->ntp_secs=bpf_htonl((uint32_t) ntps);
   arg->ntp_fracs=bpf_htonl((uint32_t) ntpf);
   return 0;
 }
